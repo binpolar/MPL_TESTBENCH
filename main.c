@@ -6,7 +6,8 @@
 
 void test_edges_creation(uint32_t addr1, uint32_t addr2);
 void test_nodes_creation(uint32_t addr);
-void test_pathfinding(uint32_t n1, uint32_t n2);
+void test_pathfinding_p2p(uint32_t n1, uint32_t n2);
+void test_pathfinding_medium_diff();
 
 int main()
 {
@@ -20,7 +21,8 @@ int main()
 
     test_edges_creation(0x0, 0x1);
 
-    test_pathfinding(0x0, 0x1);
+    test_pathfinding_p2p(0x0, 0x1);
+    test_pathfinding_medium_diff(0x0, 0x1);
 
     return 0;
 }
@@ -80,9 +82,9 @@ void test_edges_creation(uint32_t addr1, uint32_t addr2)
     }
 }
 
-void test_pathfinding(uint32_t n1, uint32_t n2)
+void test_pathfinding_p2p(uint32_t n1, uint32_t n2)
 {
-    printf("---------TESTING PATHFINDING---------\n\r");
+    printf("---------TESTING PATHFINDING POINT 2 POINT---------\n\r");
 
     mpl_create_node_if_not_exists(n1);
     mpl_create_node_if_not_exists(n2);
@@ -94,6 +96,48 @@ void test_pathfinding(uint32_t n1, uint32_t n2)
     mpl_create_or_update_edge(dest, src, 100);
 
     if (src == NULL || dest == NULL)
+    {
+        printf("Couldnt get end nodes!!!\n\r");
+    }
+
+    mpl_route_t tmp;
+    if (mpl_find_route(src, dest, &tmp))
+    {
+        for (uint8_t i = 0; i < tmp.hop_count; i++)
+        {
+            printf("Hop %u:%u\n\r", i, tmp.hops[i]);
+        }
+    }
+    else
+    {
+        printf("Pathfinding failed!!!\n\r");
+    }
+}
+
+// CREATE NETWORK WHERE N1--HI-COST-------->N2
+//                        \->TMP1-LOW-COST/
+//
+void test_pathfinding_medium_diff()
+{
+    printf("---------TESTING PATHFINDING WITH I-MEDIATE STEP WHICH SAVES COST COMPARED TO DIRECT ROUTE---------\n\r");
+
+    uint32_t addr1 = 1, addr2 = 2, add3 = 3;
+
+    mpl_create_node_if_not_exists(addr1);
+    mpl_create_node_if_not_exists(addr2);
+    mpl_create_node_if_not_exists(add3);
+
+    mpl_node_t *src = mpl_get_node(addr1);
+    mpl_node_t *dest = mpl_get_node(addr2);
+    mpl_node_t *tmp1 = mpl_get_node(add3);
+
+    mpl_create_or_update_edge(src, dest, 100);
+    mpl_create_or_update_edge(dest, src, 100);
+
+    mpl_create_or_update_edge(src, tmp1, 10);
+    mpl_create_or_update_edge(tmp1, dest, 10);
+
+    if (src == NULL || dest == NULL || tmp1 == NULL)
     {
         printf("Couldnt get end nodes!!!\n\r");
     }
