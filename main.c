@@ -8,6 +8,7 @@ void test_edges_creation(uint32_t addr1, uint32_t addr2);
 void test_nodes_creation(uint32_t addr);
 void test_pathfinding_p2p(uint32_t n1, uint32_t n2);
 void test_pathfinding_medium_diff();
+void test_pathfinding_high_diff();
 
 int main()
 {
@@ -22,7 +23,8 @@ int main()
     test_edges_creation(0x0, 0x1);
 
     test_pathfinding_p2p(0x0, 0x1);
-    test_pathfinding_medium_diff(0x0, 0x1);
+    test_pathfinding_medium_diff();
+    test_pathfinding_high_diff();
 
     return 0;
 }
@@ -154,4 +156,77 @@ void test_pathfinding_medium_diff()
     {
         printf("Pathfinding failed!!!\n\r");
     }
+}
+
+void test_pathfinding_high_diff()
+{
+    printf("========= TEST: SMALL VERIFIED GRAPH =========\n\r");
+
+    // Create exactly 5 nodes
+    for (int i = 1; i <= 5; i++)
+    {
+        mpl_create_node_if_not_exists(i);
+    }
+
+    mpl_node_t *S = mpl_get_node(1); // Source
+    mpl_node_t *T = mpl_get_node(5); // Target
+    mpl_node_t *A = mpl_get_node(2);
+    mpl_node_t *B = mpl_get_node(3);
+    mpl_node_t *C = mpl_get_node(4);
+
+    printf("Graph structure:\n\r");
+    printf("   2\n\r");
+    printf("  / \\\n\r");
+    printf(" 1   3---5\n\r");
+    printf("  \\   /\n\r");
+    printf("   4\n\r\n\r");
+
+    // Set edges with unique, non-ambiguous costs
+    mpl_create_or_update_edge(S, A, 10); // 1->2 = 10
+    mpl_create_or_update_edge(A, B, 10); // 2->3 = 10
+    mpl_create_or_update_edge(B, T, 10); // 3->5 = 10 (total path 1: 30)
+
+    mpl_create_or_update_edge(S, C, 20); // 1->4 = 20
+    mpl_create_or_update_edge(C, B, 10); // 4->3 = 10
+    // Path through 4: 1->4->3->5 = 20+10+10 = 40
+
+    mpl_create_or_update_edge(S, B, 25); // 1->3 = 25
+    // Direct: 1->3->5 = 25+10 = 35
+
+    mpl_create_or_update_edge(B, C, 5);  // 3->4 = 5 (creates cycle)
+    mpl_create_or_update_edge(C, A, 15); // 4->2 = 15
+
+    // Calculate ALL possible paths:
+    printf("\n\rAll possible paths from 1 to 5:\n\r");
+    printf("  Path A: 1->2->3->5 = 10+10+10 = 30\n\r");
+    printf("  Path B: 1->3->5 = 25+10 = 35\n\r");
+    printf("  Path C: 1->4->3->5 = 20+10+10 = 40\n\r");
+    printf("  Path D: 1->2->3->4->3->5 = 10+10+5+10+10 = 45 (cycle)\n\r");
+    printf("  Path E: 1->4->2->3->5 = 20+15+10+10 = 55\n\r");
+    printf("\n\rOPTIMAL PATH: 1->2->3->5 with cost 30\n\r");
+
+    mpl_route_t route;
+    if (mpl_find_route(S, T, &route))
+    {
+        printf("\n\rFound path (%u hops, cost: %u):\n\r", route.hop_count, route.total_cost);
+        for (uint8_t i = 0; i < route.hop_count; i++)
+        {
+            printf("  Hop %u: Node %u\n\r", i, route.hops[i]);
+        }
+
+        if (route.total_cost == 30)
+        {
+            printf("\n\rFound optimal path with cost 30!\n\r");
+        }
+        else if (route.total_cost < 30)
+        {
+            printf("\n\rIMPOSSIBLE! Found cost %u < minimum possible 30!\n\r", route.total_cost);
+        }
+        else
+        {
+            printf("\n\rSUBOPTIMAL! Expected 30, got %u\n\r", route.total_cost);
+        }
+    }
+
+    printf("========= END TEST =========\n\r\n\r");
 }
