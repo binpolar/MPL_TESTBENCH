@@ -7,7 +7,7 @@
 void test_edges_creation(uint32_t addr1, uint32_t addr2);
 void test_nodes_creation(uint32_t addr);
 void test_pathfinding_p2p(uint32_t n1, uint32_t n2);
-void test_pathfinding_medium_diff();
+void test_pathfinding_no_diff();
 void test_pathfinding_high_diff();
 
 int main()
@@ -23,8 +23,10 @@ int main()
     test_edges_creation(0x0, 0x1);
 
     test_pathfinding_p2p(0x0, 0x1);
-    test_pathfinding_medium_diff();
+    test_pathfinding_no_diff();
     test_pathfinding_high_diff();
+
+    printf("---------END TEST---------\n\r");
 
     return 0;
 }
@@ -119,7 +121,7 @@ void test_pathfinding_p2p(uint32_t n1, uint32_t n2)
 // CREATE NETWORK WHERE N1--HI-COST-------->N2
 //                        \->TMP1-LOW-COST/
 //
-void test_pathfinding_medium_diff()
+void test_pathfinding_no_diff()
 {
     printf("---------TESTING PATHFINDING WITH I-MEDIATE STEP WHICH SAVES COST COMPARED TO DIRECT ROUTE---------\n\r");
 
@@ -160,9 +162,8 @@ void test_pathfinding_medium_diff()
 
 void test_pathfinding_high_diff()
 {
-    printf("========= TEST: SMALL VERIFIED GRAPH =========\n\r");
+    printf("---------TEST: SMALL VERIFIED GRAPH---------\n\r");
 
-    // Create exactly 5 nodes
     for (int i = 1; i <= 5; i++)
     {
         mpl_create_node_if_not_exists(i);
@@ -227,6 +228,4 @@ void test_pathfinding_high_diff()
             printf("\n\rSUBOPTIMAL! Expected 30, got %u\n\r", route.total_cost);
         }
     }
-
-    printf("========= END TEST =========\n\r\n\r");
 }
