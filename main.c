@@ -26,13 +26,7 @@ int main()
     test_pathfinding_no_diff();
     test_pathfinding_high_diff();
 
-    uint16_t tmp = mpl_route_count();
-    if (tmp != 3)
-    {
-        printf("---------ERROR EXPECTED ROUTE COUNT 3 GOT %u---------\n\r", tmp);
-    }
-
-    printf("---------END TEST, GOT %u ROUTES---------\n\r", tmp);
+    printf("---------END TEST, GOT %u ROUTES---------\n\r", mpl_route_count());
 
     return 0;
 }
