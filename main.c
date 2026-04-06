@@ -27,6 +27,7 @@ int main()
     test_pathfinding_high_diff();
 
     printf("---------END TEST, GOT %u ROUTES---------\n\r", mpl_route_count());
+    mpl_print_all_routes();
 
     return 0;
 }
@@ -120,10 +121,7 @@ void test_pathfinding_p2p(uint32_t n1, uint32_t n2)
     mpl_route_t *route = find_route_and_check_route_map(src, dest);
     if (route != NULL)
     {
-        for (uint8_t i = 0; i < route->hop_count; i++)
-        {
-            printf("Hop %u:%u\n\r", i, route->hops[i]);
-        }
+        mpl_print_route(route);
     }
     else
     {
@@ -162,10 +160,7 @@ void test_pathfinding_no_diff()
     mpl_route_t *route = find_route_and_check_route_map(src, dest);
     if (route != NULL)
     {
-        for (uint8_t i = 0; i < route->hop_count; i++)
-        {
-            printf("Hop %u:%u\n\r", i, route->hops[i]);
-        }
+        mpl_print_route(route);
     }
     else
     {
@@ -223,10 +218,7 @@ void test_pathfinding_high_diff()
     if (route != NULL)
     {
         printf("\n\rFound path (%u hops, cost: %u):\n\r", route->hop_count, route->total_cost);
-        for (uint8_t i = 0; i < route->hop_count; i++)
-        {
-            printf("  Hop %u: Node %u\n\r", i, route->hops[i]);
-        }
+        mpl_print_route(route);
 
         if (route->total_cost == 30)
         {
