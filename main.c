@@ -26,9 +26,23 @@ int main()
     test_pathfinding_no_diff();
     test_pathfinding_high_diff();
 
-    printf("---------END TEST---------\n\r");
+    printf("---------END TEST, GOT %u ROUTES---------\n\r", mpl_route_count());
+    mpl_print_all_routes();
 
     return 0;
+}
+
+mpl_route_t *find_route_and_check_route_map(mpl_node_t *src, mpl_node_t *dest)
+{
+    mpl_route_t *route = mpl_find_route(src, dest);
+    if (route != NULL)
+    {
+        if (route == mpl_get_route(dest->address))
+        {
+            return route;
+        }
+    }
+    return NULL;
 }
 
 void test_nodes_creation(uint32_t addr)
@@ -104,13 +118,10 @@ void test_pathfinding_p2p(uint32_t n1, uint32_t n2)
         printf("Couldnt get end nodes!!!\n\r");
     }
 
-    mpl_route_t tmp;
-    if (mpl_find_route(src, dest, &tmp))
+    mpl_route_t *route = find_route_and_check_route_map(src, dest);
+    if (route != NULL)
     {
-        for (uint8_t i = 0; i < tmp.hop_count; i++)
-        {
-            printf("Hop %u:%u\n\r", i, tmp.hops[i]);
-        }
+        mpl_print_route(route);
     }
     else
     {
@@ -146,13 +157,10 @@ void test_pathfinding_no_diff()
         printf("Couldnt get end nodes!!!\n\r");
     }
 
-    mpl_route_t tmp;
-    if (mpl_find_route(src, dest, &tmp))
+    mpl_route_t *route = find_route_and_check_route_map(src, dest);
+    if (route != NULL)
     {
-        for (uint8_t i = 0; i < tmp.hop_count; i++)
-        {
-            printf("Hop %u:%u\n\r", i, tmp.hops[i]);
-        }
+        mpl_print_route(route);
     }
     else
     {
@@ -206,26 +214,23 @@ void test_pathfinding_high_diff()
     printf("  Path E: 1->4->2->3->5 = 20+15+10+10 = 55\n\r");
     printf("\n\rOPTIMAL PATH: 1->2->3->5 with cost 30\n\r");
 
-    mpl_route_t route;
-    if (mpl_find_route(S, T, &route))
+    mpl_route_t *route = find_route_and_check_route_map(S, T);
+    if (route != NULL)
     {
-        printf("\n\rFound path (%u hops, cost: %u):\n\r", route.hop_count, route.total_cost);
-        for (uint8_t i = 0; i < route.hop_count; i++)
-        {
-            printf("  Hop %u: Node %u\n\r", i, route.hops[i]);
-        }
+        printf("\n\rFound path (%u hops, cost: %u):\n\r", route->hop_count, route->total_cost);
+        mpl_print_route(route);
 
-        if (route.total_cost == 30)
+        if (route->total_cost == 30)
         {
             printf("\n\rFound optimal path with cost 30!\n\r");
         }
-        else if (route.total_cost < 30)
+        else if (route->total_cost < 30)
         {
-            printf("\n\rIMPOSSIBLE! Found cost %u < minimum possible 30!\n\r", route.total_cost);
+            printf("\n\rIMPOSSIBLE! Found cost %u < minimum possible 30!\n\r", route->total_cost);
         }
         else
         {
-            printf("\n\rSUBOPTIMAL! Expected 30, got %u\n\r", route.total_cost);
+            printf("\n\rSUBOPTIMAL! Expected 30, got %u\n\r", route->total_cost);
         }
     }
 }
